@@ -1,5 +1,6 @@
-use super::components::{Player, Position, Viewshed};
+use super::components::{Position, Viewshed};
 use super::map::Map;
+use super::player::Player;
 use rltk::{field_of_view, Point};
 use specs::prelude::*;
 
