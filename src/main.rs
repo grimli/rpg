@@ -45,8 +45,8 @@ struct State {
 
 impl State {
     fn run_systems(&mut self) {
-        let mut lw = LeftWalker {};
-        lw.run_now(&self.ecs);
+//        let mut lw = LeftWalker {};
+//        lw.run_now(&self.ecs);
         self.ecs.maintain();
     }
 }
@@ -99,7 +99,7 @@ fn main() -> rltk::BError {
     let mut gs = State { ecs: World::new() };
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
-//    gs.ecs.register::<LeftMover>();
+    //    gs.ecs.register::<LeftMover>();
     gs.ecs.register::<Player>();
 
     gs.ecs
@@ -113,7 +113,7 @@ fn main() -> rltk::BError {
         .with(Player {})
         .build();
 
-/*    for i in 0..10 {
+    /*    for i in 0..10 {
         gs.ecs
             .create_entity()
             .with(Position { x: i * 7, y: 20 })
