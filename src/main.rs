@@ -16,6 +16,7 @@ struct Renderable {
     bg: RGB,
 }
 
+/*
 #[derive(Component)]
 struct LeftMover {}
 
@@ -33,6 +34,7 @@ impl<'a> System<'a> for LeftWalker {
         }
     }
 }
+*/
 
 #[derive(Component)]
 struct Player {}
@@ -97,7 +99,7 @@ fn main() -> rltk::BError {
     let mut gs = State { ecs: World::new() };
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
-    gs.ecs.register::<LeftMover>();
+//    gs.ecs.register::<LeftMover>();
     gs.ecs.register::<Player>();
 
     gs.ecs
@@ -111,7 +113,7 @@ fn main() -> rltk::BError {
         .with(Player {})
         .build();
 
-    for i in 0..10 {
+/*    for i in 0..10 {
         gs.ecs
             .create_entity()
             .with(Position { x: i * 7, y: 20 })
@@ -122,7 +124,7 @@ fn main() -> rltk::BError {
             })
             .with(LeftMover {})
             .build();
-    }
+    } */
 
     rltk::main_loop(context, gs)
 }
