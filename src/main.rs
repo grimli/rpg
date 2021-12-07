@@ -7,7 +7,7 @@ mod visibility_system;
 use components::{Position, Renderable, Viewshed};
 use map::Map;
 use player::Player;
-use rltk::{GameState, Rltk, VirtualKeyCode, RGB};
+use rltk::{GameState, Rltk, RGB};
 use specs::prelude::*;
 
 pub struct State {
@@ -28,13 +28,17 @@ impl GameState for State {
         player::player_input(self, ctx);
         self.run_systems();
 
-        let position = self.ecs.read_storage::<Position>();
-        let renderable = self.ecs.read_storage::<Renderable>();
-
         map::draw_map(&self.ecs, ctx);
 
-        for (pos, render) in (&position, &renderable).join() {
-            ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph);
+        let position = self.ecs.read_storage::<Position>();
+        let renderables = self.ecs.read_storage::<Renderable>();
+        let map = self.ecs.fetch::<Map>();
+
+        for (pos, render) in (&position, &renderables).join() {
+            let idx = map.xy_idx(pos.x, pos.y);
+            if map.visible_tiles[idx] {
+                ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph)
+            }
         }
     }
 }
@@ -51,6 +55,34 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Viewshed>();
 
     let map = map::Map::new_map_rooms_and_corridors();
+
+    let mut rng = rltk::RandomNumberGenerator::new();
+    for room in map.rooms.iter().skip(1) {
+        let (x, y) = room.center();
+
+        let glyph: rltk::FontCharType;
+        let roll = rng.roll_dice(1, 2);
+        match roll {
+            1 => glyph = rltk::to_cp437('g'),
+            _ => glyph = rltk::to_cp437('o'),
+        }
+
+        gs.ecs
+            .create_entity()
+            .with(Position { x, y })
+            .with(Renderable {
+                glyph: glyph,
+                fg: RGB::named(rltk::RED),
+                bg: RGB::named(rltk::BLACK),
+            })
+            .with(Viewshed {
+                visible_tiles: Vec::new(),
+                range: 8,
+                dirty: true,
+            })
+            .build();
+    }
+
     gs.ecs.insert(map);
     let (player_x, player_y) = gs.ecs.fetch::<Map>().rooms[0].center();
 
