@@ -1,11 +1,12 @@
 mod components;
 mod map;
+mod map_indexing_system;
 mod monster_ai_system;
 mod player;
 mod rect;
 mod visibility_system;
 
-use components::{Monster, Name, Position, Renderable, Viewshed};
+use components::{BlocksTile, Monster, Name, Position, Renderable, Viewshed};
 use map::Map;
 use monster_ai_system::MonsterAI;
 use player::Player;
@@ -29,6 +30,8 @@ impl State {
         vis.run_now(&self.ecs);
         let mut mob = MonsterAI {};
         mob.run_now(&self.ecs);
+        let mut mapindex = map_indexing_system::MapIndexingSystem {};
+        mapindex.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -75,6 +78,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Viewshed>();
     gs.ecs.register::<Monster>();
     gs.ecs.register::<Name>();
+    gs.ecs.register::<BlocksTile>();
 
     let map = map::Map::new_map_rooms_and_corridors();
 
@@ -113,6 +117,7 @@ fn main() -> rltk::BError {
             .with(Name {
                 name: format!("{} #{}", &name, i),
             })
+            .with(BlocksTile {})
             .build();
     }
 
