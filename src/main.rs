@@ -137,7 +137,9 @@ fn main() -> rltk::BError {
             range: 8,
             dirty: true,
         })
-        .with(Name{name: "Player".to_string()})
+        .with(Name {
+            name: "Player".to_string(),
+        })
         .build();
 
     rltk::main_loop(context, gs)
