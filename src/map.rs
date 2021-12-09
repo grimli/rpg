@@ -17,6 +17,7 @@ pub struct Map {
     pub revealed_tiles: Vec<bool>,
     pub visible_tiles: Vec<bool>,
     pub blocked_tiles: Vec<bool>,
+    pub tile_content: Vec<Vec<Entity>>,
 }
 
 impl BaseMap for Map {
@@ -41,10 +42,18 @@ impl BaseMap for Map {
         };
 
         // Diagonals
-        if self.is_exit_valid(x-1, y-1) { exits.push(((idx-w)-1, 1.45)); }
-    if self.is_exit_valid(x+1, y-1) { exits.push(((idx-w)+1, 1.45)); }
-    if self.is_exit_valid(x-1, y+1) { exits.push(((idx+w)-1, 1.45)); }
-    if self.is_exit_valid(x+1, y+1) { exits.push(((idx+w)+1, 1.45)); }
+        if self.is_exit_valid(x - 1, y - 1) {
+            exits.push(((idx - w) - 1, 1.45));
+        }
+        if self.is_exit_valid(x + 1, y - 1) {
+            exits.push(((idx - w) + 1, 1.45));
+        }
+        if self.is_exit_valid(x - 1, y + 1) {
+            exits.push(((idx + w) - 1, 1.45));
+        }
+        if self.is_exit_valid(x + 1, y + 1) {
+            exits.push(((idx + w) + 1, 1.45));
+        }
 
         exits
     }
@@ -106,6 +115,12 @@ impl Map {
         }
     }
 
+    pub fn clear_content_index(&mut self) {
+        for content in self.tile_content.iter_mut() {
+            content.clear();
+        }
+    }
+
     /// Makes a new map using the algorithm from http://rogueliketutorials.com/tutorials/tcod/part-3/
     /// This gives a handful of random rooms and corridors joining them together.
     pub fn new_map_rooms_and_corridors() -> Map {
@@ -117,6 +132,7 @@ impl Map {
             revealed_tiles: vec![false; 80 * 50],
             visible_tiles: vec![false; 80 * 50],
             blocked_tiles: vec![false; 80 * 50],
+            tile_content: vec![Vec::new(); 80 * 50],
         };
 
         const MAX_ROOMS: i32 = 30;
