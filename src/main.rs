@@ -6,7 +6,7 @@ mod player;
 mod rect;
 mod visibility_system;
 
-use components::{BlocksTile, Monster, Name, Position, Renderable, Viewshed};
+use components::{BlocksTile, CombatStats, Monster, Name, Position, Renderable, Viewshed};
 use map::Map;
 use monster_ai_system::MonsterAI;
 use player::Player;
@@ -79,6 +79,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<Monster>();
     gs.ecs.register::<Name>();
     gs.ecs.register::<BlocksTile>();
+    gs.ecs.register::<CombatStats>();
 
     let map = map::Map::new_map_rooms_and_corridors();
 
@@ -145,6 +146,7 @@ fn main() -> rltk::BError {
         .with(Name {
             name: "Player".to_string(),
         })
+        .with(CombatStats{ max_hp: 30, hp: 30, defense: 2, power: 5 })
         .build();
 
     rltk::main_loop(context, gs)
