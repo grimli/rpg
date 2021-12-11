@@ -1,6 +1,6 @@
 use super::gamelog;
 use super::{CombatStats, Map, Name, Player, Point, Position};
-use rltk::{Console, Rltk, RGB};
+use rltk::{ Rltk, RGB};
 use specs::prelude::*;
 
 fn draw_tooltips(ecs: &World, ctx: &mut Rltk) {

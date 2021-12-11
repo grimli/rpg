@@ -1,5 +1,5 @@
 use super::{gamelog::GameLog, CombatStats, Name, SufferDamage, WantsToMelee};
-use rltk::console;
+//use rltk::console;
 use specs::prelude::*;
 
 pub struct MeleeCombatSystem {}
@@ -20,7 +20,7 @@ impl<'a> System<'a> for MeleeCombatSystem {
         for (_entity, wants_melee, name, stats) in
             (&entities, &wants_melee, &names, &combat_stats).join()
         {
-            console::log(&format!("Running Melee"));
+            //console::log(&format!("Running Melee"));
             if stats.hp > 0 {
                 let target_stats = combat_stats.get(wants_melee.target).unwrap();
                 if target_stats.hp > 0 {

@@ -1,7 +1,7 @@
 use super::components::*;
-use super::map::{Map, TileType};
 use super::{RunState, State};
-use rltk::{GameState, Point, Rltk, VirtualKeyCode, RGB};
+use super::map::{Map};
+use rltk::{ Point, Rltk, VirtualKeyCode};
 use specs::prelude::*;
 use specs_derive::Component;
 use std::cmp::{max, min};
