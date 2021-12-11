@@ -1,5 +1,6 @@
 mod components;
 mod damage_system;
+mod gamelog;
 mod gui;
 mod map;
 mod map_indexing_system;
@@ -202,6 +203,9 @@ fn main() -> rltk::BError {
         })
         .build();
     gs.ecs.insert(player_entity);
+    gs.ecs.insert(gamelog::GameLog {
+        entries: vec!["Welcome to Rusty Roguelike".to_string()],
+    });
 
     rltk::main_loop(context, gs)
 }
