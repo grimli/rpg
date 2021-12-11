@@ -1,4 +1,4 @@
-use super::{gamelog::GameLog, CombatStats, Player, SufferDamage, Name};
+use super::{gamelog::GameLog, CombatStats, Name, Player, SufferDamage};
 use rltk::console;
 use specs::prelude::*;
 
