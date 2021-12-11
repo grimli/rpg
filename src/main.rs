@@ -1,5 +1,6 @@
 mod components;
 mod damage_system;
+mod gui;
 mod map;
 mod map_indexing_system;
 mod melee_combat_system;
@@ -12,7 +13,7 @@ use components::*;
 use map::Map;
 use monster_ai_system::MonsterAI;
 use player::Player;
-use rltk::{console, GameState, Point, Rltk, RGB};
+use rltk::{GameState, Point, Rltk, RGB};
 use specs::prelude::*;
 
 #[derive(PartialEq, Copy, Clone, Debug)]
@@ -91,6 +92,7 @@ impl GameState for State {
                 ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph)
             }
         }
+        gui::draw_ui(&self.ecs, ctx)
     }
 }
 
