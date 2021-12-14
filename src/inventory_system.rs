@@ -1,6 +1,6 @@
 use super::{
     gamelog::GameLog, CombatStats, InBackpack, Name, Position, Potion, WantsToDrinkPotion,
-    WantsToPickupItem,WantsToDropItem,
+    WantsToDropItem, WantsToPickupItem,
 };
 use specs::prelude::*;
 
