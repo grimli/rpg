@@ -1,5 +1,5 @@
 use super::{
-    gamelog::GameLog, CombatStats, Consumable, InBackpack, Name, Position, 
+    gamelog::GameLog, CombatStats, Consumable, InBackpack, Name, Position, ProvidesHealing,
     WantsToDropItem, WantsToPickupItem, WantsToUseItem,
 };
 use specs::prelude::*;
@@ -56,6 +56,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Name>,
         ReadStorage<'a, Consumable>,
         WriteStorage<'a, CombatStats>,
+        ReadStorage<'a, ProvidesHealing>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -67,11 +68,23 @@ impl<'a> System<'a> for ItemUseSystem {
             names,
             consumables,
             mut combat_stats,
+            healing,
         ) = data;
-
         for (entity, useitem, stats) in (&entities, &wants_use, &mut combat_stats).join() {
-            let item = consumables.get(useitem.item);
-
+            let item_heals = healing.get(useitem.item);
+            match item_heals {
+                None => {}
+                Some(healer) => {
+                    stats.hp = i32::min(stats.max_hp, stats.hp + healer.heal_amount);
+                    if entity == *player_entity {
+                        gamelog.entries.push(format!(
+                            "You drink the {}, healing {} hp.",
+                            names.get(useitem.item).unwrap().name,
+                            healer.heal_amount
+                        ));
+                    }
+                }
+            }
             let consumable = consumables.get(useitem.item);
             match consumable {
                 None => {}

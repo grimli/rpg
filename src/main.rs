@@ -186,6 +186,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<WantsToUseItem>();
     gs.ecs.register::<WantsToDropItem>();
     gs.ecs.register::<Consumable>();
+    gs.ecs.register::<ProvidesHealing>();
 
     let map = map::Map::new_map_rooms_and_corridors();
 
