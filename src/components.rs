@@ -88,6 +88,7 @@ pub struct WantsToPickupItem {
 #[derive(Component, Debug)]
 pub struct WantsToUseItem {
     pub item: Entity,
+    pub target: Option<rltk::Point>,
 }
 
 #[derive(Component, Debug, Clone)]
@@ -101,4 +102,14 @@ pub struct Consumable {}
 #[derive(Component, Debug)]
 pub struct ProvidesHealing {
     pub heal_amount: i32,
+}
+
+#[derive(Component, Debug)]
+pub struct Ranged {
+    pub range: i32,
+}
+
+#[derive(Component, Debug)]
+pub struct InflictsDamage {
+    pub damage: i32,
 }

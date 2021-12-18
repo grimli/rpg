@@ -1,6 +1,7 @@
 use super::rect::Rect;
 use rltk::{Algorithm2D, BaseMap, Point, RandomNumberGenerator, Rltk, RGB};
 use specs::prelude::*;
+use specs_derive::Component;
 use std::cmp::{max, min};
 
 pub const MAPWIDTH: usize = 80;
@@ -13,7 +14,7 @@ pub enum TileType {
     Floor,
 }
 
-#[derive(Default)]
+#[derive(Default,Component)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rect>,

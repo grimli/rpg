@@ -1,6 +1,6 @@
 use super::{
-    gamelog::GameLog, CombatStats, Consumable, InBackpack, Name, Position, ProvidesHealing,
-    WantsToDropItem, WantsToPickupItem, WantsToUseItem,
+    gamelog::GameLog, map::Map, CombatStats, Consumable, InBackpack, InflictsDamage, Name,
+    Position, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToUseItem,
 };
 use specs::prelude::*;
 
@@ -57,6 +57,9 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Consumable>,
         WriteStorage<'a, CombatStats>,
         ReadStorage<'a, ProvidesHealing>,
+        ReadStorage<'a, InflictsDamage>,
+        ReadExpect<'a, Map>,
+        WriteStorage<'a, SufferDamage>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -69,6 +72,9 @@ impl<'a> System<'a> for ItemUseSystem {
             consumables,
             mut combat_stats,
             healing,
+            inflict_damage,
+            map,
+            mut suffer_damage,
         ) = data;
         for (entity, useitem, stats) in (&entities, &wants_use, &mut combat_stats).join() {
             let item_heals = healing.get(useitem.item);
@@ -82,6 +88,29 @@ impl<'a> System<'a> for ItemUseSystem {
                             names.get(useitem.item).unwrap().name,
                             healer.heal_amount
                         ));
+                    }
+                }
+            }
+            // If it inflicts damage, apply it to the target cell
+            let item_damages = inflict_damage.get(useitem.item);
+            match item_damages {
+                None => {}
+                Some(damage) => {
+                    let target_point = useitem.target.unwrap();
+                    let idx = map.xy_idx(target_point.x, target_point.y);
+                    let mut used_item = false;
+                    for mob in map.tile_content[idx].iter() {
+                        SufferDamage::new_damage(&mut suffer_damage, *mob, damage.damage);
+                        if entity == *player_entity {
+                            let mob_name = names.get(*mob).unwrap();
+                            let item_name = names.get(useitem.item).unwrap();
+                            gamelog.entries.push(format!(
+                                "You use {} on {}, inflicting {} hp.",
+                                item_name.name, mob_name.name, damage.damage
+                            ));
+                        }
+
+                        used_item = true;
                     }
                 }
             }
