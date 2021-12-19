@@ -27,7 +27,11 @@ pub enum RunState {
     MonsterTurn,
     ShowInventory,
     ShowDropItem,
-    ShowTargeting { range: i32, item: Entity },
+    ShowTargeting {
+        range: i32,
+        item: Entity,
+        target: Option<Point>,
+    },
 }
 
 pub struct State {
@@ -131,11 +135,21 @@ impl GameState for State {
                     }
                 }
             }
-            RunState::ShowTargeting { range, item } => {
-                let result = gui::ranged_target(self, ctx, range);
+            RunState::ShowTargeting {
+                range,
+                item,
+                target,
+            } => {
+                let result = gui::ranged_target(self, ctx, range, target);
                 match result.0 {
                     gui::ItemMenuResult::Cancel => newrunstate = RunState::AwaitingInput,
-                    gui::ItemMenuResult::NoResponse => {}
+                    gui::ItemMenuResult::NoResponse => {
+                        newrunstate = RunState::ShowTargeting {
+                            range: range,
+                            item: item,
+                            target: result.2,
+                        }
+                    }
                     gui::ItemMenuResult::Selected => {
                         let mut intent = self.ecs.write_storage::<WantsToUseItem>();
                         intent
@@ -164,6 +178,7 @@ impl GameState for State {
                             newrunstate = RunState::ShowTargeting {
                                 range: is_item_ranged.range,
                                 item: item_entity,
+                                target: None,
                             };
                         } else {
                             let mut intent = self.ecs.write_storage::<WantsToUseItem>();

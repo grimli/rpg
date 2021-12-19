@@ -328,7 +328,8 @@ pub fn ranged_target(
     gs: &mut State,
     ctx: &mut Rltk,
     range: i32,
-) -> (ItemMenuResult, Option<Point>) {
+    target: Option<Point>,
+) -> (ItemMenuResult, Option<Point>, Option<Point>) {
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
     let viewsheds = gs.ecs.read_storage::<Viewshed>();
@@ -354,31 +355,81 @@ pub fn ranged_target(
             }
         }
     } else {
-        return (ItemMenuResult::Cancel, None);
+        return (ItemMenuResult::Cancel, None, None);
     }
 
     // Draw mouse cursor
-    let mouse_pos = ctx.mouse_pos();
+    let target_pos: Option<Point>;
+    match target {
+        None => target_pos = Some(*player_pos),
+        Some(target) => target_pos = Some(target),
+    }
+
     let mut valid_target = false;
     for idx in available_cells.iter() {
-        if idx.x == mouse_pos.0 && idx.y == mouse_pos.1 {
+        if idx.x == target_pos.unwrap().x && idx.y == target_pos.unwrap().y {
             valid_target = true;
         }
     }
+
     if valid_target {
-        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::CYAN));
-        if ctx.left_click {
-            return (
-                ItemMenuResult::Selected,
-                Some(Point::new(mouse_pos.0, mouse_pos.1)),
-            );
-        }
+        ctx.set_bg(
+            target_pos.unwrap().x,
+            target_pos.unwrap().y,
+            RGB::named(rltk::CYAN),
+        );
     } else {
-        ctx.set_bg(mouse_pos.0, mouse_pos.1, RGB::named(rltk::RED));
-        if ctx.left_click {
-            return (ItemMenuResult::Cancel, None);
-        }
+        ctx.set_bg(
+            target_pos.unwrap().x,
+            target_pos.unwrap().y,
+            RGB::named(rltk::RED),
+        );
     }
 
-    (ItemMenuResult::NoResponse, None)
+    match ctx.key {
+        None => {}
+        Some(key) => match key {
+            VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
+                target_pos.unwrap().x -= 1
+            }
+            VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
+                target_pos.unwrap().x += 1
+            }
+            VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
+                target_pos.unwrap().y += 1
+            }
+            VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
+                target_pos.unwrap().y -= 1
+            }
+            // Diagonals
+            VirtualKeyCode::Numpad9 | VirtualKeyCode::Y => {
+                target_pos.unwrap().x += 1;
+                target_pos.unwrap().y -= 1;
+            }
+
+            VirtualKeyCode::Numpad7 | VirtualKeyCode::U => {
+                target_pos.unwrap().x -= 1;
+                target_pos.unwrap().y -= 1;
+            }
+
+            VirtualKeyCode::Numpad3 | VirtualKeyCode::N => {
+                target_pos.unwrap().x += 1;
+                target_pos.unwrap().y += 1;
+            }
+
+            VirtualKeyCode::Numpad1 | VirtualKeyCode::B => {
+                target_pos.unwrap().x -= 1;
+                target_pos.unwrap().y += 1;
+            }
+            VirtualKeyCode::Return => {
+                if valid_target {
+                    return (ItemMenuResult::Selected, target_pos, target_pos);
+                } else {
+                    return (ItemMenuResult::Cancel, None, None);
+                }
+            }
+            _ => {}
+        },
+    }
+    return (ItemMenuResult::NoResponse, None, target_pos);
 }
