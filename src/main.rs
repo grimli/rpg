@@ -222,6 +222,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<ProvidesHealing>();
     gs.ecs.register::<Ranged>();
     gs.ecs.register::<InflictsDamage>();
+    gs.ecs.register::<AreaOfEffect>();
 
     let map = map::Map::new_map_rooms_and_corridors();
 

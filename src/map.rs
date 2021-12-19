@@ -14,7 +14,7 @@ pub enum TileType {
     Floor,
 }
 
-#[derive(Default,Component)]
+#[derive(Default, Component)]
 pub struct Map {
     pub tiles: Vec<TileType>,
     pub rooms: Vec<Rect>,
