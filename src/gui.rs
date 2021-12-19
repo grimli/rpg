@@ -1,5 +1,7 @@
 use super::gamelog;
-use super::{CombatStats, InBackpack, Map, Name, Player, Point, Position, State, Viewshed};
+use super::{
+    CombatStats, InBackpack, Map, Name, Player, Point, Position, RunState, State, Viewshed,
+};
 use rltk::{Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
 
@@ -333,6 +335,7 @@ pub fn ranged_target(
     let player_entity = gs.ecs.fetch::<Entity>();
     let player_pos = gs.ecs.fetch::<Point>();
     let viewsheds = gs.ecs.read_storage::<Viewshed>();
+    //println!("Started ranged_target");
 
     ctx.print_color(
         5,
@@ -359,71 +362,82 @@ pub fn ranged_target(
     }
 
     // Draw mouse cursor
-    let target_pos: Option<Point>;
+    let mut target_pos: Point;
     match target {
-        None => target_pos = Some(*player_pos),
-        Some(target) => target_pos = Some(target),
+        None => target_pos = *player_pos,
+        Some(target) => target_pos = target,
     }
+    //    println!("target: {:?}", target);
+    //    println!("target_pos: {:?}", target_pos);
 
     let mut valid_target = false;
     for idx in available_cells.iter() {
-        if idx.x == target_pos.unwrap().x && idx.y == target_pos.unwrap().y {
+        if idx.x == target_pos.x && idx.y == target_pos.y {
             valid_target = true;
         }
     }
 
     if valid_target {
-        ctx.set_bg(
-            target_pos.unwrap().x,
-            target_pos.unwrap().y,
-            RGB::named(rltk::CYAN),
-        );
+        ctx.set_bg(target_pos.x, target_pos.y, RGB::named(rltk::CYAN));
     } else {
-        ctx.set_bg(
-            target_pos.unwrap().x,
-            target_pos.unwrap().y,
-            RGB::named(rltk::RED),
-        );
+        ctx.set_bg(target_pos.x, target_pos.y, RGB::named(rltk::RED));
     }
 
     match ctx.key {
         None => {}
         Some(key) => match key {
             VirtualKeyCode::Left | VirtualKeyCode::Numpad4 | VirtualKeyCode::H => {
-                target_pos.unwrap().x -= 1
+                //println!("target: {:?}{:?}", key, target_pos);
+                target_pos.x -= 1;
+                //println!("target: {:?}{:?}", key, target_pos);
             }
             VirtualKeyCode::Right | VirtualKeyCode::Numpad6 | VirtualKeyCode::L => {
-                target_pos.unwrap().x += 1
+                //println!("target: {:?}{:?}", key, target_pos);
+                target_pos.x += 1;
+                //println!("target: {:?}{:?}", key, target_pos);
             }
             VirtualKeyCode::Up | VirtualKeyCode::Numpad8 | VirtualKeyCode::K => {
-                target_pos.unwrap().y += 1
+                //println!("target: {:?}{:?}", key, target_pos);
+                target_pos.y -= 1;
+                //println!("target: {:?}{:?}", key, target_pos);
             }
             VirtualKeyCode::Down | VirtualKeyCode::Numpad2 | VirtualKeyCode::J => {
-                target_pos.unwrap().y -= 1
+                //println!("target: {:?}{:?}", key, target_pos);
+                target_pos.y += 1;
+                //println!("target: {:?}{:?}", key, target_pos);
             }
             // Diagonals
             VirtualKeyCode::Numpad9 | VirtualKeyCode::Y => {
-                target_pos.unwrap().x += 1;
-                target_pos.unwrap().y -= 1;
+                //println!("target: {:?}{:?}", key, target_pos);
+                target_pos.x += 1;
+                target_pos.y -= 1;
+                //println!("target: {:?}{:?}", key, target_pos);
             }
 
             VirtualKeyCode::Numpad7 | VirtualKeyCode::U => {
-                target_pos.unwrap().x -= 1;
-                target_pos.unwrap().y -= 1;
+                //println!("target: {:?}{:?}", key, target_pos);
+                target_pos.x -= 1;
+                target_pos.y -= 1;
+                //println!("target: {:?}{:?}", key, target_pos);
             }
 
             VirtualKeyCode::Numpad3 | VirtualKeyCode::N => {
-                target_pos.unwrap().x += 1;
-                target_pos.unwrap().y += 1;
+                //println!("target: {:?}{:?}", key, target_pos);
+                target_pos.x += 1;
+                target_pos.y += 1;
+                //println!("target: {:?}{:?}", key, target_pos);
             }
 
             VirtualKeyCode::Numpad1 | VirtualKeyCode::B => {
-                target_pos.unwrap().x -= 1;
-                target_pos.unwrap().y += 1;
+                //println!("target: {:?}{:?}", key, target_pos);
+                target_pos.x -= 1;
+                target_pos.y += 1;
+                //println!("target: {:?}{:?}", key, target_pos);
             }
             VirtualKeyCode::Return => {
                 if valid_target {
-                    return (ItemMenuResult::Selected, target_pos, target_pos);
+                    //println!("target_pos: {:?}", target_pos);
+                    return (ItemMenuResult::Selected, Some(target_pos), Some(target_pos));
                 } else {
                     return (ItemMenuResult::Cancel, None, None);
                 }
@@ -431,5 +445,6 @@ pub fn ranged_target(
             _ => {}
         },
     }
-    return (ItemMenuResult::NoResponse, None, target_pos);
+    //    println!("target_pos: {:?}", target_pos);
+    return (ItemMenuResult::NoResponse, None, Some(target_pos));
 }

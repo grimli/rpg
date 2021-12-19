@@ -32,6 +32,7 @@ pub enum RunState {
         item: Entity,
         target: Option<Point>,
     },
+    Dead,
 }
 
 pub struct State {
@@ -196,14 +197,17 @@ impl GameState for State {
                     }
                 }
             }
+            RunState::Dead => {}
+        }
+
+        if damage_system::delete_the_dead(&mut self.ecs) == Some(RunState::Dead) {
+            newrunstate = RunState::Dead;
         }
 
         {
             let mut runwriter = self.ecs.write_resource::<RunState>();
             *runwriter = newrunstate;
         }
-
-        damage_system::delete_the_dead(&mut self.ecs);
     }
 }
 
