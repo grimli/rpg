@@ -6,6 +6,7 @@ mod inventory_system;
 mod map;
 mod map_indexing_system;
 mod melee_combat_system;
+mod menu;
 mod monster_ai_system;
 mod player;
 mod rect;
@@ -33,6 +34,9 @@ pub enum RunState {
         target: Option<Point>,
     },
     Dead,
+    MainMenu {
+        menu_selection: gui::MainMenuSelection,
+    },
 }
 
 pub struct State {
@@ -66,7 +70,6 @@ impl GameState for State {
     fn tick(&mut self, ctx: &mut Rltk) {
         ctx.cls();
         map::draw_map(&self.ecs, ctx);
-
         {
             let positions = self.ecs.read_storage::<Position>();
             let renderables = self.ecs.read_storage::<Renderable>();
@@ -99,6 +102,23 @@ impl GameState for State {
         //console::log(&format!("{:#?}", newrunstate));
 
         match newrunstate {
+            RunState::MainMenu { .. } => {
+                let result = menu::main_menu(self, ctx);
+                match result {
+                    gui::MainMenuResult::NoSelection { selected } => {
+                        newrunstate = RunState::MainMenu {
+                            menu_selection: selected,
+                        }
+                    }
+                    gui::MainMenuResult::Selected { selected } => match selected {
+                        gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
+                        gui::MainMenuSelection::LoadGame => newrunstate = RunState::PreRun,
+                        gui::MainMenuSelection::Quit => {
+                            ::std::process::exit(0);
+                        }
+                    },
+                }
+            }
             RunState::PreRun => {
                 self.run_systems();
                 self.ecs.maintain();
@@ -198,6 +218,27 @@ impl GameState for State {
                 }
             }
             RunState::Dead => {}
+
+            _ => {
+                map::draw_map(&self.ecs, ctx);
+
+                {
+                    let positions = self.ecs.read_storage::<Position>();
+                    let renderables = self.ecs.read_storage::<Renderable>();
+                    let map = self.ecs.fetch::<Map>();
+
+                    let mut data = (&positions, &renderables).join().collect::<Vec<_>>();
+                    data.sort_by(|&a, &b| b.1.render_order.cmp(&a.1.render_order));
+                    for (pos, render) in data.iter() {
+                        let idx = map.xy_idx(pos.x, pos.y);
+                        if map.visible_tiles[idx] {
+                            ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph)
+                        }
+                    }
+
+                    gui::draw_ui(&self.ecs, ctx);
+                }
+            }
         }
 
         if damage_system::delete_the_dead(&mut self.ecs) == Some(RunState::Dead) {
@@ -251,7 +292,9 @@ fn main() -> rltk::BError {
         spawner::spawn_room(&mut gs.ecs, room);
     }
 
-    gs.ecs.insert(RunState::PreRun);
+    gs.ecs.insert(RunState::MainMenu {
+        menu_selection: gui::MainMenuSelection::NewGame,
+    });
     gs.ecs.insert(map);
     let (player_x, player_y) = gs.ecs.fetch::<Map>().rooms[0].center();
     gs.ecs.insert(Point::new(player_x, player_y));

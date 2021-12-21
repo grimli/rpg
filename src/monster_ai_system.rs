@@ -29,7 +29,8 @@ impl<'a> System<'a> for MonsterAI {
             mut viewshed,
             monster,
             mut position,
-            mut wants_to_melee, mut confused
+            mut wants_to_melee,
+            mut confused,
         ) = data;
 
         if *runstate != RunState::MonsterTurn {
