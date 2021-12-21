@@ -1,7 +1,7 @@
 use super::{
-    gamelog::GameLog, map::Map, AreaOfEffect, CombatStats, Consumable, InBackpack, InflictsDamage,
-    Name, Position, ProvidesHealing, SufferDamage, WantsToDropItem, WantsToPickupItem,
-    WantsToUseItem,
+    gamelog::GameLog, map::Map, AreaOfEffect, CombatStats, Confusion, Consumable, InBackpack,
+    InflictsDamage, Name, Position, ProvidesHealing, SufferDamage, WantsToDropItem,
+    WantsToPickupItem, WantsToUseItem,
 };
 use specs::prelude::*;
 
@@ -62,6 +62,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadExpect<'a, Map>,
         WriteStorage<'a, SufferDamage>,
         ReadStorage<'a, AreaOfEffect>,
+        WriteStorage<'a, Confusion>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -78,6 +79,7 @@ impl<'a> System<'a> for ItemUseSystem {
             map,
             mut suffer_damage,
             aoe,
+            mut confused,
         ) = data;
         for (entity, useitem) in (&entities, &wants_use).join() {
             // Targeting
@@ -154,6 +156,33 @@ impl<'a> System<'a> for ItemUseSystem {
                         used_item = true;
                     }
                 }
+            }
+            // Can it pass along confusion? Note the use of scopes to escape from the borrow checker!
+            let mut add_confusion = Vec::new();
+            {
+                let causes_confusion = confused.get(useitem.item);
+                match causes_confusion {
+                    None => {}
+                    Some(confusion) => {
+                        let used_item = false;
+                        for mob in targets.iter() {
+                            add_confusion.push((*mob, confusion.turns));
+                            if entity == *player_entity {
+                                let mob_name = names.get(*mob).unwrap();
+                                let item_name = names.get(useitem.item).unwrap();
+                                gamelog.entries.push(format!(
+                                    "You use {} on {}, confusing them.",
+                                    item_name.name, mob_name.name
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+            for mob in add_confusion.iter() {
+                confused
+                    .insert(mob.0, Confusion { turns: mob.1 })
+                    .expect("Unable to insert status");
             }
 
             let consumable = consumables.get(useitem.item);
