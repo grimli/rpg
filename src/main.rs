@@ -1,3 +1,5 @@
+extern crate serde;
+
 mod components;
 mod damage_system;
 mod gamelog;
@@ -37,6 +39,7 @@ pub enum RunState {
     MainMenu {
         menu_selection: gui::MainMenuSelection,
     },
+    SaveGame,
 }
 
 pub struct State {
@@ -218,7 +221,13 @@ impl GameState for State {
                 }
             }
             RunState::Dead => {}
-
+            RunState::SaveGame => {
+                let data = serde_json::to_string(&*self.ecs.fetch::<Map>()).unwrap();
+                println!("{}", data);
+                newrunstate = RunState::MainMenu {
+                    menu_selection: gui::MainMenuSelection::LoadGame,
+                };
+            }
             _ => {
                 map::draw_map(&self.ecs, ctx);
 
