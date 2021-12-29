@@ -1,4 +1,4 @@
-use super::{components::*, gamelog::GameLog, map::Map, RunState, State};
+use super::{components::*, gamelog::GameLog, map::Map, map::TileType, RunState, State};
 use rltk::{Point, Rltk, VirtualKeyCode, RGB};
 use serde;
 use serde::{Deserialize, Serialize};
@@ -127,10 +127,32 @@ pub fn player_input(gs: &mut State, ctx: &mut Rltk) -> RunState {
 
             VirtualKeyCode::Numpad1 | VirtualKeyCode::B => try_move_player(-1, 1, &mut gs.ecs),
 
+            // Level changes
+            VirtualKeyCode::Period => {
+                if try_next_level(&mut gs.ecs) {
+                    return RunState::NextLevel;
+                }
+            }
+
             // Save and Quit
             VirtualKeyCode::Escape => return RunState::SaveGame,
             _ => return RunState::AwaitingInput,
         },
     }
     RunState::PlayerTurn
+}
+
+pub fn try_next_level(ecs: &mut World) -> bool {
+    let player_pos = ecs.fetch::<Point>();
+    let map = ecs.fetch::<Map>();
+    let player_idx = map.xy_idx(player_pos.x, player_pos.y);
+    if map.tiles[player_idx] == TileType::DownStairs {
+        true
+    } else {
+        let mut gamelog = ecs.fetch_mut::<GameLog>();
+        gamelog
+            .entries
+            .push("There is no way down from here.".to_string());
+        false
+    }
 }

@@ -166,8 +166,8 @@ pub fn load_game(ecs: &mut World) {
         .expect("Unable to delete helper");
 }
 
-
-
 pub fn delete_save() {
-    if Path::new("./savegame.json").exists() { std::fs::remove_file("./savegame.json").expect("Unable to delete file"); }
+    if Path::new("./savegame.json").exists() {
+        std::fs::remove_file("./savegame.json").expect("Unable to delete file");
+    }
 }
