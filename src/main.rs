@@ -12,6 +12,7 @@ mod menu;
 mod monster_ai_system;
 mod player;
 mod rect;
+mod saveload_system;
 mod spawner;
 mod visibility_system;
 
@@ -20,7 +21,10 @@ use map::Map;
 use monster_ai_system::MonsterAI;
 use player::Player;
 use rltk::{GameState, Point, Rltk};
-use specs::prelude::*;
+use specs::{
+    prelude::*,
+    saveload::{SimpleMarker, SimpleMarkerAllocator},
+};
 
 #[derive(PartialEq, Copy, Clone, Debug)]
 pub enum RunState {
@@ -115,7 +119,11 @@ impl GameState for State {
                     }
                     gui::MainMenuResult::Selected { selected } => match selected {
                         gui::MainMenuSelection::NewGame => newrunstate = RunState::PreRun,
-                        gui::MainMenuSelection::LoadGame => newrunstate = RunState::PreRun,
+                        gui::MainMenuSelection::LoadGame => {
+                            saveload_system::load_game(&mut self.ecs);
+                            newrunstate = RunState::AwaitingInput;
+                            saveload_system::delete_save();
+                        }
                         gui::MainMenuSelection::Quit => {
                             ::std::process::exit(0);
                         }
@@ -222,8 +230,7 @@ impl GameState for State {
             }
             RunState::Dead => {}
             RunState::SaveGame => {
-                let data = serde_json::to_string(&*self.ecs.fetch::<Map>()).unwrap();
-                println!("{}", data);
+                saveload_system::save_game(&mut self.ecs);
                 newrunstate = RunState::MainMenu {
                     menu_selection: gui::MainMenuSelection::LoadGame,
                 };
@@ -293,7 +300,10 @@ fn main() -> rltk::BError {
     gs.ecs.register::<InflictsDamage>();
     gs.ecs.register::<AreaOfEffect>();
     gs.ecs.register::<Confusion>();
+    gs.ecs.register::<SimpleMarker<SerializeMe>>();
+    gs.ecs.register::<SerializationHelper>();
 
+    gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     let map = map::Map::new_map_rooms_and_corridors();
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());

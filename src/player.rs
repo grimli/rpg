@@ -1,10 +1,17 @@
 use super::{components::*, gamelog::GameLog, map::Map, RunState, State};
-use rltk::{Point, Rltk, VirtualKeyCode};
-use specs::prelude::*;
-use specs_derive::Component;
+use rltk::{Point, Rltk, VirtualKeyCode, RGB};
+use serde;
+use serde::{Deserialize, Serialize};
+use specs::{
+    error::NoError,
+    prelude::*,
+    saveload::{ConvertSaveload, Marker},
+};
+use specs_derive::{Component, ConvertSaveload};
+//use specs_derive::*;
 use std::cmp::{max, min};
 
-#[derive(Component)]
+#[derive(Component, Serialize, Deserialize, Clone)]
 pub struct Player {}
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
