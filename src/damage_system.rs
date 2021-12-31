@@ -40,11 +40,11 @@ pub fn delete_the_dead(ecs: &mut World) -> Option<RunState> {
                         if let Some(victim_name) = victim_name {
                             log.entries.push(format!("{} is dead", &victim_name.name));
                         }
-                        dead.push(entity);
+                        dead.push(entity)
                     }
                     Some(_) => {
-                        log.entries.push(format!("You are dead"));
-                        result = Some(RunState::Dead)
+                        //let mut runstate = ecs.write_resource::<RunState>();
+                        result = Some(RunState::GameOver);
                     }
                 }
             }
