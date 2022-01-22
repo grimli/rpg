@@ -222,7 +222,7 @@ fn magic_missile_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437(')'),
+            glyph: rltk::to_cp437('m'),
             fg: RGB::named(rltk::CYAN),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -242,7 +242,7 @@ fn fireball_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437(')'),
+            glyph: rltk::to_cp437('f'),
             fg: RGB::named(rltk::ORANGE),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
@@ -263,7 +263,7 @@ fn confusion_scroll(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
         .with(Position { x, y })
         .with(Renderable {
-            glyph: rltk::to_cp437(')'),
+            glyph: rltk::to_cp437('c'),
             fg: RGB::named(rltk::PINK),
             bg: RGB::named(rltk::BLACK),
             render_order: 2,
