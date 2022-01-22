@@ -4,6 +4,7 @@ mod components;
 mod damage_system;
 mod gamelog;
 mod gui;
+mod hunger_system;
 mod inventory_system;
 mod map;
 mod map_indexing_system;
@@ -77,6 +78,8 @@ impl State {
         drop_items.run_now(&self.ecs);
         let mut item_remove = ItemRemoveSystem {};
         item_remove.run_now(&self.ecs);
+        let mut hunger = hunger_system::HungerSystem {};
+        hunger.run_now(&self.ecs);
         let mut particles = particle_system::ParticleSpawnSystem {};
         particles.run_now(&self.ecs);
 
@@ -493,6 +496,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<DefenseBonus>();
     gs.ecs.register::<WantsToRemoveItem>();
     gs.ecs.register::<ParticleLifetime>();
+    gs.ecs.register::<HungerClock>();
+    gs.ecs.register::<ProvidesFood>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     let map = map::Map::new_map_rooms_and_corridors(1);

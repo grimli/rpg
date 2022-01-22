@@ -1,6 +1,6 @@
 use super::{components::*, Player};
-use specs::error::NoError;
 use specs::prelude::*;
+use specs::error::NoError;
 use specs::saveload::{
     DeserializeComponents, MarkedBuilder, SerializeComponents, SimpleMarker, SimpleMarkerAllocator,
 };
@@ -71,7 +71,9 @@ pub fn save_game(ecs: &mut World) {
             MeleePowerBonus,
             DefenseBonus,
             WantsToRemoveItem,
-            ParticleLifetime
+            ParticleLifetime,
+            HungerClock,
+            ProvidesFood
         );
     }
 
@@ -151,7 +153,9 @@ pub fn load_game(ecs: &mut World) {
             MeleePowerBonus,
             DefenseBonus,
             WantsToRemoveItem,
-            ParticleLifetime
+            ParticleLifetime,
+            HungerClock,
+            ProvidesFood
         );
     }
 
