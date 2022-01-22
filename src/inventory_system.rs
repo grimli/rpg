@@ -1,8 +1,8 @@
 use super::{
     gamelog::GameLog, map::Map, particle_system::ParticleBuilder, AreaOfEffect, CombatStats,
     Confusion, Consumable, Equippable, Equipped, HungerClock, HungerState, InBackpack,
-    InflictsDamage, Name, Position, ProvidesFood, ProvidesHealing, SufferDamage, WantsToDropItem,
-    WantsToPickupItem, WantsToRemoveItem, WantsToUseItem,
+    InflictsDamage, MagicMapper, Name, Position, ProvidesFood, ProvidesHealing, SufferDamage,
+    WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem,
 };
 use specs::prelude::*;
 
@@ -60,7 +60,7 @@ impl<'a> System<'a> for ItemUseSystem {
         WriteStorage<'a, CombatStats>,
         ReadStorage<'a, ProvidesHealing>,
         ReadStorage<'a, InflictsDamage>,
-        ReadExpect<'a, Map>,
+        WriteExpect<'a, Map>,
         WriteStorage<'a, SufferDamage>,
         ReadStorage<'a, AreaOfEffect>,
         WriteStorage<'a, Confusion>,
@@ -71,6 +71,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, Position>,
         ReadStorage<'a, ProvidesFood>,
         WriteStorage<'a, HungerClock>,
+        ReadStorage<'a, MagicMapper>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -84,7 +85,7 @@ impl<'a> System<'a> for ItemUseSystem {
             mut combat_stats,
             healing,
             inflict_damage,
-            map,
+            mut map,
             mut suffer_damage,
             aoe,
             mut confused,
@@ -95,10 +96,12 @@ impl<'a> System<'a> for ItemUseSystem {
             positions,
             provides_food,
             mut hunger_clocks,
+            magic_mapper,
         ) = data;
         for (entity, useitem) in (&entities, &wants_use).join() {
             // Targeting
             let mut targets: Vec<Entity> = Vec::new();
+            let mut used_item = false;
             match useitem.target {
                 None => {
                     targets.push(*player_entity);
@@ -131,12 +134,27 @@ impl<'a> System<'a> for ItemUseSystem {
                 }
             }
 
+            // If its a magic mapper...
+            let is_mapper = magic_mapper.get(useitem.item);
+            match is_mapper {
+                None => {}
+                Some(_) => {
+                    used_item = true;
+                    for r in map.revealed_tiles.iter_mut() {
+                        *r = true;
+                    }
+                    gamelog
+                        .entries
+                        .push("The map is revealed to you!".to_string());
+                }
+            }
+
             // It it is edible, eat it!
             let item_edible = provides_food.get(useitem.item);
             match item_edible {
                 None => {}
                 Some(_) => {
-                    let mut used_item = false;
+                    //let mut used_item = false;
                     used_item = true;
                     let target = targets[0];
                     let hc = hunger_clocks.get_mut(target);
@@ -207,7 +225,7 @@ impl<'a> System<'a> for ItemUseSystem {
                     for target in targets.iter() {
                         let stats = combat_stats.get_mut(*target);
                         if let Some(stats) = stats {
-                            let mut used_item = false;
+                            //let mut used_item = false;
                             stats.hp = i32::min(stats.max_hp, stats.hp + healer.heal_amount);
                             if entity == *player_entity {
                                 gamelog.entries.push(format!(
@@ -239,7 +257,7 @@ impl<'a> System<'a> for ItemUseSystem {
             match item_damages {
                 None => {}
                 Some(damage) => {
-                    let mut used_item = false;
+                    //let mut used_item = false;
                     for mob in targets.iter() {
                         SufferDamage::new_damage(&mut suffer_damage, *mob, damage.damage);
                         if entity == *player_entity {
@@ -273,7 +291,7 @@ impl<'a> System<'a> for ItemUseSystem {
                 match causes_confusion {
                     None => {}
                     Some(confusion) => {
-                        let used_item = false;
+                        //let used_item = false;
                         for mob in targets.iter() {
                             add_confusion.push((*mob, confusion.turns));
                             if entity == *player_entity {
