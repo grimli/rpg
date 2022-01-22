@@ -244,7 +244,7 @@ pub fn draw_map(ecs: &super::World, ctx: &mut Rltk) {
         if x > 79 {
             x = 0;
             y += 1;
-         }
+        }
     }
 }
 
