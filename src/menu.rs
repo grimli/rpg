@@ -37,25 +37,53 @@ pub fn main_menu(gs: &mut State, ctx: &mut Rltk) -> MainMenuResult {
     );
 
     let mut y = 24;
-    if let RunState::MainMenu{ menu_selection : selection } = *runstate {
+    if let RunState::MainMenu {
+        menu_selection: selection,
+    } = *runstate
+    {
         if selection == MainMenuSelection::NewGame {
-            ctx.print_color_centered(y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Begin New Game");
+            ctx.print_color_centered(
+                y,
+                RGB::named(rltk::MAGENTA),
+                RGB::named(rltk::BLACK),
+                "Begin New Game",
+            );
         } else {
-            ctx.print_color_centered(y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Begin New Game");
+            ctx.print_color_centered(
+                y,
+                RGB::named(rltk::WHITE),
+                RGB::named(rltk::BLACK),
+                "Begin New Game",
+            );
         }
         y += 1;
 
         if save_exists {
             if selection == MainMenuSelection::LoadGame {
-                ctx.print_color_centered(y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Load Game");
+                ctx.print_color_centered(
+                    y,
+                    RGB::named(rltk::MAGENTA),
+                    RGB::named(rltk::BLACK),
+                    "Load Game",
+                );
             } else {
-                ctx.print_color_centered(y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Load Game");
+                ctx.print_color_centered(
+                    y,
+                    RGB::named(rltk::WHITE),
+                    RGB::named(rltk::BLACK),
+                    "Load Game",
+                );
             }
             y += 1;
         }
 
         if selection == MainMenuSelection::Quit {
-            ctx.print_color_centered(y, RGB::named(rltk::MAGENTA), RGB::named(rltk::BLACK), "Quit");
+            ctx.print_color_centered(
+                y,
+                RGB::named(rltk::MAGENTA),
+                RGB::named(rltk::BLACK),
+                "Quit",
+            );
         } else {
             ctx.print_color_centered(y, RGB::named(rltk::WHITE), RGB::named(rltk::BLACK), "Quit");
         }

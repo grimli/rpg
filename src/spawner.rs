@@ -1,10 +1,10 @@
 use super::{
     map::{Map, MAPCOUNT, MAPHEIGHT, MAPWIDTH},
     rect::Rect,
-    AreaOfEffect, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, EquipmentSlot,
-    Equippable, HungerClock, HungerState, InflictsDamage, Item, MagicMapper, MeleePowerBonus,
-    Monster, Name, Player, Position, ProvidesFood, ProvidesHealing, RandomTable, Ranged,
-    Renderable, SerializeMe, Viewshed,
+    AreaOfEffect, BlocksTile, CombatStats, Confusion, Consumable, DefenseBonus, EntryTrigger,
+    EquipmentSlot, Equippable, Hidden, HungerClock, HungerState, InflictsDamage, Item, MagicMapper,
+    MeleePowerBonus, Monster, Name, Player, Position, ProvidesFood, ProvidesHealing, RandomTable,
+    Ranged, Renderable, SerializeMe, SingleActivation, Viewshed,
 };
 use rltk::{RandomNumberGenerator, RGB};
 use specs::{
@@ -16,6 +16,26 @@ use std::collections::HashMap;
 
 const MAX_MONSTERS: i32 = 4;
 const MAX_ITEMS: i32 = 2;
+
+fn bear_trap(ecs: &mut World, x: i32, y: i32) {
+    ecs.create_entity()
+        .with(Position { x, y })
+        .with(Renderable {
+            glyph: rltk::to_cp437('^'),
+            fg: RGB::named(rltk::RED),
+            bg: RGB::named(rltk::BLACK),
+            render_order: 2,
+        })
+        .with(Name {
+            name: "Bear Trap".to_string(),
+        })
+        .with(Hidden {})
+        .with(EntryTrigger {})
+        .with(InflictsDamage { damage: 6 })
+        .with(SingleActivation {})
+        .marked::<SimpleMarker<SerializeMe>>()
+        .build();
+}
 
 fn rations(ecs: &mut World, x: i32, y: i32) {
     ecs.create_entity()
@@ -156,18 +176,19 @@ fn monster<S: ToString>(
 
 fn room_table(map_depth: i32) -> RandomTable {
     RandomTable::new()
-        .add("Goblin", 10)
-        .add("Orc", 1 + map_depth)
-        .add("Health Potion", 7)
         .add("Fireball Scroll", 2 + map_depth)
         .add("Confusion Scroll", 2 + map_depth)
         .add("Magic Missile Scroll", 4)
+        .add("Health Potion", 7)
         .add("Dagger", 3)
         .add("Shield", 3)
         .add("Longsword", map_depth - 1)
         .add("Tower Shield", map_depth - 1)
         .add("Rations", 10)
         .add("Magic Mapping Scroll", 2)
+        .add("Bear Trap", 2)
+        .add("Goblin", 10)
+        .add("Orc", 1 + map_depth)
 }
 
 #[allow(clippy::map_entry)]
@@ -215,6 +236,7 @@ pub fn spawn_room(ecs: &mut World, room: &Rect, map_depth: i32) {
             "Tower Shield" => tower_shield(ecs, x, y),
             "Rations" => rations(ecs, x, y),
             "Magic Mapping Scroll" => magic_mapping_scroll(ecs, x, y),
+            "Bear Trap" => bear_trap(ecs, x, y),
             _ => {}
         }
     }

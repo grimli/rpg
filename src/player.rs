@@ -15,6 +15,7 @@ use std::cmp::{max, min};
 pub struct Player {}
 
 pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
+    let mut entity_moved = ecs.write_storage::<EntityMoved>();
     let mut positions = ecs.write_storage::<Position>();
     let mut players = ecs.write_storage::<Player>();
     let mut viewsheds = ecs.write_storage::<Viewshed>();
@@ -58,6 +59,10 @@ pub fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
             ppos.y = pos.y;
 
             viewshed.dirty = true;
+
+            entity_moved
+                .insert(entity, EntityMoved {})
+                .expect("Unable to insert marker");
         }
     }
 }
