@@ -1,8 +1,8 @@
 use super::{
     gamelog::GameLog, map::Map, particle_system::ParticleBuilder, AreaOfEffect, CombatStats,
     Confusion, Consumable, Equippable, Equipped, HungerClock, HungerState, InBackpack,
-    InflictsDamage, MagicMapper, Name, Position, ProvidesFood, ProvidesHealing, SufferDamage,
-    WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem,
+    InflictsDamage, MagicMapper, Name, Position, ProvidesFood, ProvidesHealing, RunState,
+    SufferDamage, WantsToDropItem, WantsToPickupItem, WantsToRemoveItem, WantsToUseItem,
 };
 use specs::prelude::*;
 
@@ -72,6 +72,7 @@ impl<'a> System<'a> for ItemUseSystem {
         ReadStorage<'a, ProvidesFood>,
         WriteStorage<'a, HungerClock>,
         ReadStorage<'a, MagicMapper>,
+        WriteExpect<'a, RunState>,
     );
 
     fn run(&mut self, data: Self::SystemData) {
@@ -97,6 +98,7 @@ impl<'a> System<'a> for ItemUseSystem {
             provides_food,
             mut hunger_clocks,
             magic_mapper,
+            mut runstate,
         ) = data;
         for (entity, useitem) in (&entities, &wants_use).join() {
             // Targeting
@@ -140,12 +142,10 @@ impl<'a> System<'a> for ItemUseSystem {
                 None => {}
                 Some(_) => {
                     used_item = true;
-                    for r in map.revealed_tiles.iter_mut() {
-                        *r = true;
-                    }
                     gamelog
                         .entries
                         .push("The map is revealed to you!".to_string());
+                    *runstate = RunState::MagicMapReveal { row: 0 };
                 }
             }
 

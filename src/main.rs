@@ -21,7 +21,7 @@ mod visibility_system;
 
 use components::*;
 use inventory_system::ItemRemoveSystem;
-use map::Map;
+use map::{Map, MAPHEIGHT, MAPWIDTH};
 use monster_ai_system::MonsterAI;
 use player::Player;
 use random_table::RandomTable;
@@ -52,6 +52,9 @@ pub enum RunState {
     NextLevel,
     ShowRemoveItem,
     GameOver,
+    MagicMapReveal {
+        row: i32,
+    },
 }
 
 pub struct State {
@@ -246,13 +249,6 @@ impl GameState for State {
                 }
             }
 
-            /*
-            for (pos, render) in (&position, &renderables).join() {
-                let idx = map.xy_idx(pos.x, pos.y);
-                if map.visible_tiles[idx] {
-                    ctx.set(pos.x, pos.y, render.fg, render.bg, render.glyph)
-                }
-            }*/
             gui::draw_ui(&self.ecs, ctx);
         }
 
@@ -296,7 +292,24 @@ impl GameState for State {
             RunState::PlayerTurn => {
                 self.run_systems();
                 self.ecs.maintain();
-                newrunstate = RunState::MonsterTurn;
+                match *self.ecs.fetch::<RunState>() {
+                    RunState::MagicMapReveal { .. } => {
+                        newrunstate = RunState::MagicMapReveal { row: 0 }
+                    }
+                    _ => newrunstate = RunState::MonsterTurn,
+                }
+            }
+            RunState::MagicMapReveal { row } => {
+                let mut map = self.ecs.fetch_mut::<Map>();
+                for x in 0..MAPWIDTH {
+                    let idx = map.xy_idx(x as i32, row);
+                    map.revealed_tiles[idx] = true;
+                }
+                if row as usize == MAPHEIGHT - 1 {
+                    newrunstate = RunState::MonsterTurn;
+                } else {
+                    newrunstate = RunState::MagicMapReveal { row: row + 1 };
+                }
             }
             RunState::MonsterTurn => {
                 self.run_systems();
