@@ -10,6 +10,7 @@ mod map_indexing_system;
 mod melee_combat_system;
 mod menu;
 mod monster_ai_system;
+mod particle_system;
 mod player;
 mod random_table;
 mod rect;
@@ -76,6 +77,8 @@ impl State {
         drop_items.run_now(&self.ecs);
         let mut item_remove = ItemRemoveSystem {};
         item_remove.run_now(&self.ecs);
+        let mut particles = particle_system::ParticleSpawnSystem {};
+        particles.run_now(&self.ecs);
 
         self.ecs.maintain();
     }
@@ -224,6 +227,7 @@ impl State {
 impl GameState for State {
     fn tick(&mut self, ctx: &mut Rltk) {
         ctx.cls();
+        particle_system::cull_dead_particles(&mut self.ecs, ctx);
         map::draw_map(&self.ecs, ctx);
         {
             let positions = self.ecs.read_storage::<Position>();
@@ -488,6 +492,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<MeleePowerBonus>();
     gs.ecs.register::<DefenseBonus>();
     gs.ecs.register::<WantsToRemoveItem>();
+    gs.ecs.register::<ParticleLifetime>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     let map = map::Map::new_map_rooms_and_corridors(1);
@@ -509,6 +514,7 @@ fn main() -> rltk::BError {
     gs.ecs.insert(gamelog::GameLog {
         entries: vec!["Welcome to Rusty Roguelike".to_string()],
     });
+    gs.ecs.insert(particle_system::ParticleBuilder::new());
 
     rltk::main_loop(context, gs)
 }
