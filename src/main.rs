@@ -15,6 +15,7 @@ mod particle_system;
 mod player;
 mod random_table;
 mod rect;
+mod rex_assets;
 mod saveload_system;
 mod spawner;
 mod visibility_system;
@@ -25,6 +26,7 @@ use map::{Map, MAPHEIGHT, MAPWIDTH};
 use monster_ai_system::MonsterAI;
 use player::Player;
 use random_table::RandomTable;
+use rex_assets::RexAssets;
 use rltk::{GameState, Point, Rltk};
 use specs::{
     prelude::*,
@@ -534,6 +536,7 @@ fn main() -> rltk::BError {
         entries: vec!["Welcome to Rusty Roguelike".to_string()],
     });
     gs.ecs.insert(particle_system::ParticleBuilder::new());
+    gs.ecs.insert(rex_assets::RexAssets::new());
 
     rltk::main_loop(context, gs)
 }
