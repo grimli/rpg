@@ -146,19 +146,20 @@ impl State {
         }
 
         // Build a new map and place the player
-        let mut builder = map_builders::random_builder(1);
+        let mut builder;
         let mut worldmap;
         let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            let (newmap, start) = builder.build_map(1);
-            *worldmap_resource = newmap;
-            player_start = start;
+            builder = map_builders::random_builder(1);
+            builder.build_map();
+            *worldmap_resource = builder.get_map();
+            player_start = builder.get_starting_position();
             worldmap = worldmap_resource.clone();
         }
 
         // Spawn bad guys
-        builder.spawn_entities(&worldmap, &mut self.ecs, 1);
+        builder.spawn_entities(&mut self.ecs);
 
         // Place the player and update resources
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -200,14 +201,14 @@ impl State {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             current_depth = worldmap_resource.depth;
             builder = map_builders::random_builder(current_depth + 1);
-            let (newmap, start) = builder.build_map(current_depth + 1);
-            *worldmap_resource = newmap;
-            player_start = start;
+            builder.build_map();
+            *worldmap_resource = builder.get_map();
+            player_start = builder.get_starting_position();
             worldmap = worldmap_resource.clone();
         }
 
         // Spawn bad guys
-        builder.spawn_entities(&worldmap, &mut self.ecs, current_depth + 1);
+        builder.spawn_entities(&mut self.ecs);
 
         // Place the player and update resources
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -536,11 +537,12 @@ fn main() -> rltk::BError {
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
     let mut builder = map_builders::random_builder(1);
-    let (newmap, start) = builder.build_map(1);
+    let newmap = builder.get_map();
+    let start = builder.get_starting_position();
     let (player_x, player_y) = (start.x, start.y);
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
-    builder.spawn_entities(&newmap, &mut gs.ecs, 1);
+    builder.spawn_entities(&mut gs.ecs);
 
     gs.ecs.insert(RunState::MainMenu {
         menu_selection: gui::MainMenuSelection::NewGame,
