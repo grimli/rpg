@@ -7,6 +7,7 @@ mod gui;
 mod hunger_system;
 mod inventory_system;
 mod map;
+pub mod map_builders;
 mod map_indexing_system;
 mod melee_combat_system;
 mod menu;
@@ -148,7 +149,7 @@ impl State {
         let worldmap;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            *worldmap_resource = Map::new_map_rooms_and_corridors(1);
+            *worldmap_resource = map_builders::build_random_map(1);
             worldmap = worldmap_resource.clone();
         }
 
@@ -194,7 +195,7 @@ impl State {
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             let current_depth = worldmap_resource.depth;
-            *worldmap_resource = Map::new_map_rooms_and_corridors(current_depth + 1);
+            *worldmap_resource = map_builders::build_random_map(current_depth + 1);
             worldmap = worldmap_resource.clone();
         }
 
@@ -529,7 +530,7 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SingleActivation>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
-    let map = map::Map::new_map_rooms_and_corridors(1);
+    let map : Map = map_builders::build_random_map(1);
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
     for room in map.rooms.iter().skip(1) {
