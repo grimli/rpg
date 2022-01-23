@@ -146,7 +146,7 @@ impl State {
         }
 
         // Build a new map and place the player
-        let worldmap;
+        let mut worldmap;
         let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
@@ -157,9 +157,7 @@ impl State {
         }
 
         // Spawn bad guys
-        for room in worldmap.rooms.iter().skip(1) {
-            spawner::spawn_room(&mut self.ecs, room, 1);
-        }
+        map_builders::spawn(&mut worldmap, &mut self.ecs, 1);
 
         // Place the player and update resources
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -193,7 +191,7 @@ impl State {
         }
 
         // Build a new map and place the player
-        let worldmap;
+        let mut worldmap;
         let mut current_depth: i32 = 1;
         let player_start;
         {
@@ -206,9 +204,7 @@ impl State {
         }
 
         // Spawn bad guys
-        for room in worldmap.rooms.iter().skip(1) {
-            spawner::spawn_room(&mut self.ecs, room, current_depth + 1);
-        }
+        map_builders::spawn(&mut worldmap, &mut self.ecs, current_depth + 1);
 
         // Place the player and update resources
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -536,13 +532,11 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SingleActivation>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
-    let (map, player_start) = map_builders::build_random_map(1);
+    let (mut map, player_start) = map_builders::build_random_map(1);
     let (player_x, player_y) = (player_start.x, player_start.y);
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
-    for room in map.rooms.iter().skip(1) {
-        spawner::spawn_room(&mut gs.ecs, room, 1);
-    }
+    map_builders::spawn(&mut map, &mut gs.ecs, 1);
 
     gs.ecs.insert(RunState::MainMenu {
         menu_selection: gui::MainMenuSelection::NewGame,
