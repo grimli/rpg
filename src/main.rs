@@ -147,9 +147,12 @@ impl State {
 
         // Build a new map and place the player
         let worldmap;
+        let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            *worldmap_resource = map_builders::build_random_map(1);
+            let (newmap, start) = map_builders::build_random_map(1);
+            *worldmap_resource = newmap;
+            player_start = start;
             worldmap = worldmap_resource.clone();
         }
 
@@ -159,7 +162,7 @@ impl State {
         }
 
         // Place the player and update resources
-        let (player_x, player_y) = worldmap.rooms[0].center();
+        let (player_x, player_y) = (player_start.x, player_start.y);
         let player_entity = spawner::player(&mut self.ecs, player_x, player_y);
         let mut player_position = self.ecs.write_resource::<Point>();
         *player_position = Point::new(player_x, player_y);
@@ -192,10 +195,13 @@ impl State {
         // Build a new map and place the player
         let worldmap;
         let mut current_depth: i32 = 1;
+        let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            let current_depth = worldmap_resource.depth;
-            *worldmap_resource = map_builders::build_random_map(current_depth + 1);
+            current_depth = worldmap_resource.depth;
+            let (newmap, start) = map_builders::build_random_map(current_depth + 1);
+            *worldmap_resource = newmap;
+            player_start = start;
             worldmap = worldmap_resource.clone();
         }
 
@@ -205,7 +211,7 @@ impl State {
         }
 
         // Place the player and update resources
-        let (player_x, player_y) = worldmap.rooms[0].center();
+        let (player_x, player_y) = (player_start.x, player_start.y);
         let mut player_position = self.ecs.write_resource::<Point>();
         *player_position = Point::new(player_x, player_y);
         let mut position_components = self.ecs.write_storage::<Position>();
@@ -530,7 +536,8 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SingleActivation>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
-    let map : Map = map_builders::build_random_map(1);
+    let (map, player_start) = map_builders::build_random_map(1);
+    let (player_x, player_y) = (player_start.x, player_start.y);
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
     for room in map.rooms.iter().skip(1) {
