@@ -146,18 +146,19 @@ impl State {
         }
 
         // Build a new map and place the player
+        let mut builder = map_builders::random_builder(1);
         let mut worldmap;
         let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
-            let (newmap, start) = map_builders::build_random_map(1);
+            let (newmap, start) = builder.build_map(1);
             *worldmap_resource = newmap;
             player_start = start;
             worldmap = worldmap_resource.clone();
         }
 
         // Spawn bad guys
-        map_builders::spawn(&mut worldmap, &mut self.ecs, 1);
+        builder.spawn_entities(&worldmap, &mut self.ecs, 1);
 
         // Place the player and update resources
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -191,20 +192,22 @@ impl State {
         }
 
         // Build a new map and place the player
-        let mut worldmap;
-        let mut current_depth: i32 = 1;
+        let mut builder;
+        let worldmap;
+        let current_depth;
         let player_start;
         {
             let mut worldmap_resource = self.ecs.write_resource::<Map>();
             current_depth = worldmap_resource.depth;
-            let (newmap, start) = map_builders::build_random_map(current_depth + 1);
+            builder = map_builders::random_builder(current_depth + 1);
+            let (newmap, start) = builder.build_map(current_depth + 1);
             *worldmap_resource = newmap;
             player_start = start;
             worldmap = worldmap_resource.clone();
         }
 
         // Spawn bad guys
-        map_builders::spawn(&mut worldmap, &mut self.ecs, current_depth + 1);
+        builder.spawn_entities(&worldmap, &mut self.ecs, current_depth + 1);
 
         // Place the player and update resources
         let (player_x, player_y) = (player_start.x, player_start.y);
@@ -532,16 +535,17 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SingleActivation>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
-    let (mut map, player_start) = map_builders::build_random_map(1);
-    let (player_x, player_y) = (player_start.x, player_start.y);
+    let mut builder = map_builders::random_builder(1);
+    let (newmap, start) = builder.build_map(1);
+    let (player_x, player_y) = (start.x, start.y);
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
-    map_builders::spawn(&mut map, &mut gs.ecs, 1);
+    builder.spawn_entities(&newmap, &mut gs.ecs, 1);
 
     gs.ecs.insert(RunState::MainMenu {
         menu_selection: gui::MainMenuSelection::NewGame,
     });
-    gs.ecs.insert(map);
+    gs.ecs.insert(newmap);
     let (player_x, player_y) = gs.ecs.fetch::<Map>().rooms[0].center();
     gs.ecs.insert(Point::new(player_x, player_y));
 

@@ -1,18 +1,15 @@
 mod common;
 mod simple_map;
 
-use super::{map, map::TileType, rect::Rect, spawner, Map, Position, World};
+use super::{map::TileType, rect::Rect, spawner, Map, Position, World};
 use simple_map::SimpleMapBuilder;
 
-trait MapBuilder {
-    fn build(new_depth: i32) -> (Map, Position);
-    fn spawn(map: &mut Map, ecs: &mut World, new_depth: i32);
+pub trait MapBuilder {
+    fn build_map(&mut self, new_depth: i32) -> (Map, Position);
+    fn spawn_entities(&mut self, map: &Map, ecs: &mut World, new_depth: i32);
 }
 
-pub fn build_random_map(new_depth: i32) -> (Map, Position) {
-    SimpleMapBuilder::build(new_depth)
-}
-
-pub fn spawn(map: &mut Map, ecs: &mut World, new_depth: i32) {
-    SimpleMapBuilder::spawn(map, ecs, new_depth);
+pub fn random_builder(new_depth : i32) -> Box<dyn MapBuilder> {
+    // Note that until we have a second map type, this isn't even slighlty random
+    Box::new(SimpleMapBuilder::new(new_depth))
 }

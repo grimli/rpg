@@ -5,13 +5,13 @@ use specs::prelude::*;
 pub struct SimpleMapBuilder {}
 
 impl MapBuilder for SimpleMapBuilder {
-    fn build(new_depth: i32) -> (Map, Position) {
+    fn build_map(&mut self, new_depth: i32) -> (Map, Position) {
         let mut map = Map::new(new_depth);
         let playerpos = SimpleMapBuilder::rooms_and_corridors(&mut map);
         (map, playerpos)
     }
 
-    fn spawn(map: &mut Map, ecs: &mut World, new_depth: i32) {
+    fn spawn_entities(&mut self, map: &Map, ecs: &mut World, new_depth: i32) {
         for room in map.rooms.iter().skip(1) {
             spawner::spawn_room(ecs, room, 1);
         }
@@ -19,6 +19,10 @@ impl MapBuilder for SimpleMapBuilder {
 }
 
 impl SimpleMapBuilder {
+    pub fn new(new_depth : i32) -> SimpleMapBuilder {
+            SimpleMapBuilder{}
+        }
+        
     fn rooms_and_corridors(map: &mut Map) -> Position {
         const MAX_ROOMS: i32 = 30;
         const MIN_SIZE: i32 = 6;
