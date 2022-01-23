@@ -536,19 +536,20 @@ fn main() -> rltk::BError {
     gs.ecs.register::<SingleActivation>();
 
     gs.ecs.insert(SimpleMarkerAllocator::<SerializeMe>::new());
+
     let mut builder = map_builders::random_builder(1);
+    builder.build_map();
     let newmap = builder.get_map();
-    let start = builder.get_starting_position();
-    let (player_x, player_y) = (start.x, start.y);
+    let player_start = builder.get_starting_position();
+    let (player_x, player_y) = (player_start.x, player_start.y);
+
 
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
     builder.spawn_entities(&mut gs.ecs);
-
     gs.ecs.insert(RunState::MainMenu {
         menu_selection: gui::MainMenuSelection::NewGame,
     });
     gs.ecs.insert(newmap);
-    let (player_x, player_y) = gs.ecs.fetch::<Map>().rooms[0].center();
     gs.ecs.insert(Point::new(player_x, player_y));
 
     let player_entity = spawner::player(&mut gs.ecs, player_x, player_y);
