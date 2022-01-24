@@ -494,13 +494,11 @@ impl GameState for State {
 
 fn main() -> rltk::BError {
     use rltk::RltkBuilder;
-    /*let mut context = RltkBuilder::simple80x50()
-        .with_title("Roguelike Tutorial")
-        .build()?;
-    context.with_post_scanlines(true);*/
+    //let mut context = RltkBuilder::simple80x50()
     let context = RltkBuilder::simple80x50()
         .with_title("Wonderful RustMUD")
         .build()?;
+    //context.with_post_scanlines(true);
     let mut gs = State {
         ecs: World::new(),
         mapgen_next_state: Some(RunState::MainMenu {
