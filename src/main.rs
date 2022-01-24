@@ -543,7 +543,6 @@ fn main() -> rltk::BError {
     let player_start = builder.get_starting_position();
     let (player_x, player_y) = (player_start.x, player_start.y);
 
-
     gs.ecs.insert(rltk::RandomNumberGenerator::new());
     builder.spawn_entities(&mut gs.ecs);
     gs.ecs.insert(RunState::MainMenu {
