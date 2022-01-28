@@ -1,9 +1,11 @@
 mod bsp_dungeon;
+mod bsp_interior;
 mod common;
 mod simple_map;
 
 use super::{map::TileType, rect::Rect, spawner, Map, Position, World, SHOW_MAPGEN_VISUALIZER};
 use bsp_dungeon::BspDungeonBuilder;
+use bsp_interior::BspInteriorBuilder;
 use simple_map::SimpleMapBuilder;
 
 pub trait MapBuilder {
@@ -17,9 +19,10 @@ pub trait MapBuilder {
 
 pub fn random_builder(new_depth: i32) -> Box<dyn MapBuilder> {
     let mut rng = rltk::RandomNumberGenerator::new();
-    let builder = rng.roll_dice(1, 2);
+    let builder = rng.roll_dice(1, 3);
     match builder {
         1 => Box::new(BspDungeonBuilder::new(new_depth)),
-        _ => Box::new(SimpleMapBuilder::new(new_depth)),
+        2 => Box::new(BspInteriorBuilder::new(new_depth)),
+        _ => Box::new(SimpleMapBuilder::new(new_depth))
     }
 }
